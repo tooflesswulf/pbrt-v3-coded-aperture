@@ -3,3 +3,10 @@ src/build
 src/bin
 src/objs
 .sconsign.dblite
+
+# CLion idea
+.idea/
+
+# buid dirs
+cmake-build-*
+
