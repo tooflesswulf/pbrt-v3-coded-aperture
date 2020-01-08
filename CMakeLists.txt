@@ -544,6 +544,12 @@ ADD_SANITIZERS ( obj2pbrt )
 ADD_EXECUTABLE ( cyhair2pbrt src/tools/cyhair2pbrt.cpp )
 ADD_SANITIZERS ( cyhair2pbrt )
 
+# Added code things
+ADD_EXECUTABLE(main src-add/main.cpp)
+ADD_SANITIZERS(main)
+TARGET_COMPILE_FEATURES(main PRIVATE ${PBRT_CXX11_FEATURES})
+TARGET_LINK_LIBRARIES(main ${ALL_PBRT_LIBS})
+
 # Unit test
 
 FILE ( GLOB PBRT_TEST_SOURCE
