@@ -13,7 +13,6 @@
 
 template<typename X>
 using u_ptr = std::unique_ptr<X[]>;
-#define PS_ADD(T, N, V) u_ptr<T>(new T[N]V)
 
 int main(int argc, char** argv)
 {
@@ -44,8 +43,7 @@ int main(int argc, char** argv)
     // Camera "perspective" "float fov" [39]
     {
         pbrt::ParamSet ps;
-        ps.AddFloat("fov", u_ptr<float>(new float[1]{39}));
-//      ps.AddFloat("fov", PS_ADD(float, 1, { 39 }));
+        ps.AddFloat("fov", u_ptr<float>(new float[1]{39}), 1);
         pbrt::pbrtCamera("perspective", ps);
     }
 
@@ -54,7 +52,6 @@ int main(int argc, char** argv)
     {
         pbrt::ParamSet ps;
         ps.AddInt("xresolution", u_ptr<int>(new int[1]{700}), 1);
-//      ps.AddInt("xresolution", PS_ADD(int, 1, { 700 }), 1);
         ps.AddInt("yresolution", u_ptr<int>(new int[1]{700}), 1);
         ps.AddString("filename", u_ptr<std::string>(new std::string[1]{"img.png"}), 1);
         pbrt::pbrtFilm("image", ps);
