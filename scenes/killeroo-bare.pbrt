@@ -1,11 +1,11 @@
 
 LookAt 400 10 30   0 63 -110   0 0 1
 Rotate -5 0 0 1
-Camera "perspective" "float fov" [39]
-"float lensradius" [10] "float focaldistance" [300]
+Camera "custom" "float fov" [39]
+"float lensradius" [100] "float focaldistance" [300]
 Film "image"  
 "integer xresolution" [700] "integer yresolution" [700]
-    "string filename" "killeroo-bare-def.png"
+    "string filename" "killeroo-bare-def-cust.png"
 
 # zoom in by feet
 # "integer xresolution" [1500] "integer yresolution" [1500]
