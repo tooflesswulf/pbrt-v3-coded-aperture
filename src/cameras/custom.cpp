@@ -40,6 +40,14 @@
 #include "stats.h"
 
 namespace pbrt {
+Point2f MyConcentricSampleDisk(const Point2f& sample) {
+//    return ConcentricSampleDisk(sample);
+    float theta = sample.x * Pi;
+    float r = Lerp(sample.y, .8, 1);
+    return r * Point2f(std::cos(theta), std::sin(theta));
+
+//    return {0, 0};
+}
 
 // CustomCamera Method Definitions
 CustomCamera::CustomCamera(const AnimatedTransform &CameraToWorld,
@@ -76,7 +84,7 @@ Float CustomCamera::GenerateRay(const CameraSample &sample,
     // Modify ray for depth of field
     if (lensRadius > 0) {
         // Sample point on lens
-        Point2f pLens = lensRadius * ConcentricSampleDisk(sample.pLens);
+        Point2f pLens = lensRadius * MyConcentricSampleDisk(sample.pLens);
 
         // Compute point on plane of focus
         Float ft = focalDistance / ray->d.z;
@@ -103,7 +111,7 @@ Float CustomCamera::GenerateRayDifferential(const CameraSample &sample,
     // Modify ray for depth of field
     if (lensRadius > 0) {
         // Sample point on lens
-        Point2f pLens = lensRadius * ConcentricSampleDisk(sample.pLens);
+        Point2f pLens = lensRadius * MyConcentricSampleDisk(sample.pLens);
 
         // Compute point on plane of focus
         Float ft = focalDistance / ray->d.z;
@@ -119,7 +127,7 @@ Float CustomCamera::GenerateRayDifferential(const CameraSample &sample,
         // Compute _PerspectiveCamera_ ray differentials accounting for lens
 
         // Sample point on lens
-        Point2f pLens = lensRadius * ConcentricSampleDisk(sample.pLens);
+        Point2f pLens = lensRadius * MyConcentricSampleDisk(sample.pLens);
         Vector3f dx = Normalize(Vector3f(pCamera + dxCamera));
         Float ft = focalDistance / dx.z;
         Point3f pFocus = Point3f(0, 0, 0) + (ft * dx);
