@@ -42,6 +42,7 @@
 #include "pbrt.h"
 #include "camera.h"
 #include "film.h"
+#include "imageio.h"
 
 namespace pbrt {
 
@@ -66,6 +67,10 @@ class CustomCamera : public ProjectiveCamera {
     // CustomCamera Private Data
     Vector3f dxCamera, dyCamera;
     Float A;
+
+    Point2i LensDims;
+    std::unique_ptr<RGBSpectrum[]> LensMask;
+    Float ConvertSamplePoint(const Point2f& pt, Point2f& ret) const;
 };
 
 CustomCamera *CreateCustomCamera(const ParamSet &params,

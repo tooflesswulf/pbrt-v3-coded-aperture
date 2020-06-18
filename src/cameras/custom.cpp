@@ -40,15 +40,6 @@
 #include "stats.h"
 
 namespace pbrt {
-Point2f MyConcentricSampleDisk(const Point2f& sample) {
-//    return ConcentricSampleDisk(sample);
-    float theta = sample.x * Pi;
-    float r = Lerp(sample.y, .8, 1);
-    return r * Point2f(std::cos(theta), std::sin(theta));
-
-//    return {0, 0};
-}
-
 // CustomCamera Method Definitions
 CustomCamera::CustomCamera(const AnimatedTransform &CameraToWorld,
                            const Bounds2f &screenWindow,
@@ -72,6 +63,37 @@ CustomCamera::CustomCamera(const AnimatedTransform &CameraToWorld,
     pMin /= pMin.z;
     pMax /= pMax.z;
     A = std::abs((pMax.x - pMin.x) * (pMax.y - pMin.y));
+
+//    LensMask = ReadImage("../scenes/test.png", &LensDims);
+    LensMask = ReadImage("../scenes/rand_msk.png", &LensDims);
+
+    // How to access image elements:
+//    for (int r = 0; r < LensDims.x; ++r) {
+//        for (int c = 0; c < LensDims.y; ++c) {
+//            int ix = r * LensDims.y + c;
+//            RGBSpectrum rgb = LensMask[ix];
+////            std::cout << "P(" << r << ", " << c << ") V(" << rgb[0] << ", " << rgb[1] << ", " << rgb[2] << ")\n";
+//        }
+//    }
+}
+
+Float CustomCamera::ConvertSamplePoint(const pbrt::Point2f& pt, pbrt::Point2f& ret) const
+{
+    int im_x = (int) (pt.x * LensDims.x);
+    int im_y = (int) (pt.y * LensDims.y);
+
+    auto rgb = LensMask[im_x * LensDims.y + im_y];
+
+    // Map uniform random numbers to $[-1,1]^2$
+    ret = 2.f * pt - Vector2f(1, 1);
+    ret = lensRadius * ret;
+
+    return (rgb[0] + rgb[1] + rgb[2]) / 3.;
+
+//    float theta = pt.x * Pi;
+//    float r = Lerp(pt.y, .8, 1);
+//    ret = lensRadius * r * Point2f(std::cos(theta), std::sin(theta));
+    return 1;
 }
 
 Float CustomCamera::GenerateRay(const CameraSample &sample,
@@ -81,10 +103,14 @@ Float CustomCamera::GenerateRay(const CameraSample &sample,
     Point3f pFilm = Point3f(sample.pFilm.x, sample.pFilm.y, 0);
     Point3f pCamera = RasterToCamera(pFilm);
     *ray = Ray(Point3f(0, 0, 0), Normalize(Vector3f(pCamera)));
+
+    Float f = 1;
+
     // Modify ray for depth of field
     if (lensRadius > 0) {
         // Sample point on lens
-        Point2f pLens = lensRadius * MyConcentricSampleDisk(sample.pLens);
+        Point2f pLens; // = lensRadius * MyConcentricSampleDisk(sample.pLens);
+        f = ConvertSamplePoint(sample.pLens, pLens);
 
         // Compute point on plane of focus
         Float ft = focalDistance / ray->d.z;
@@ -97,7 +123,10 @@ Float CustomCamera::GenerateRay(const CameraSample &sample,
     ray->time = Lerp(sample.time, shutterOpen, shutterClose);
     ray->medium = medium;
     *ray = CameraToWorld(*ray);
-    return 1;
+
+    LOG(WARNING) << "tmax of a point (depth?): " << ray->tMax << std::endl;
+
+    return f;
 }
 
 Float CustomCamera::GenerateRayDifferential(const CameraSample &sample,
@@ -108,10 +137,15 @@ Float CustomCamera::GenerateRayDifferential(const CameraSample &sample,
     Point3f pCamera = RasterToCamera(pFilm);
     Vector3f dir = Normalize(Vector3f(pCamera.x, pCamera.y, pCamera.z));
     *ray = RayDifferential(Point3f(0, 0, 0), dir);
+
+    Float f = 1;
+
     // Modify ray for depth of field
     if (lensRadius > 0) {
         // Sample point on lens
-        Point2f pLens = lensRadius * MyConcentricSampleDisk(sample.pLens);
+//        Point2f pLens = lensRadius * MyConcentricSampleDisk(sample.pLens);
+        Point2f pLens;
+        f = ConvertSamplePoint(sample.pLens, pLens);
 
         // Compute point on plane of focus
         Float ft = focalDistance / ray->d.z;
@@ -127,7 +161,9 @@ Float CustomCamera::GenerateRayDifferential(const CameraSample &sample,
         // Compute _PerspectiveCamera_ ray differentials accounting for lens
 
         // Sample point on lens
-        Point2f pLens = lensRadius * MyConcentricSampleDisk(sample.pLens);
+        Point2f pLens; // = lensRadius * MyConcentricSampleDisk(sample.pLens);
+        f = ConvertSamplePoint(sample.pLens, pLens);
+
         Vector3f dx = Normalize(Vector3f(pCamera + dxCamera));
         Float ft = focalDistance / dx.z;
         Point3f pFocus = Point3f(0, 0, 0) + (ft * dx);
@@ -148,7 +184,7 @@ Float CustomCamera::GenerateRayDifferential(const CameraSample &sample,
     ray->medium = medium;
     *ray = CameraToWorld(*ray);
     ray->hasDifferentials = true;
-    return 1;
+    return f;
 }
 
 Spectrum CustomCamera::We(const Ray &ray, Point2f *pRaster2) const {
