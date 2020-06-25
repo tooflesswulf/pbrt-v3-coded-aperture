@@ -10,3 +10,7 @@ src/objs
 # buid dirs
 cmake-build-*
 
+# images
+*.exr
+*.png
+
