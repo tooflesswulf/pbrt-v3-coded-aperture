@@ -41,7 +41,8 @@
 
 namespace pbrt {
 // CustomCamera Method Definitions
-CustomCamera::CustomCamera(const AnimatedTransform &CameraToWorld,
+CustomCamera::CustomCamera(const std::string& mask_path,
+                           const AnimatedTransform &CameraToWorld,
                            const Bounds2f &screenWindow,
                            Float shutterOpen, Float shutterClose,
                            Float lensRadius, Float focalDistance,
@@ -65,16 +66,7 @@ CustomCamera::CustomCamera(const AnimatedTransform &CameraToWorld,
     A = std::abs((pMax.x - pMin.x) * (pMax.y - pMin.y));
 
 //    LensMask = ReadImage("../scenes/test.png", &LensDims);
-    LensMask = ReadImage("../scenes/test.png", &LensDims);
-
-    // How to access image elements:
-//    for (int r = 0; r < LensDims.x; ++r) {
-//        for (int c = 0; c < LensDims.y; ++c) {
-//            int ix = r * LensDims.y + c;
-//            RGBSpectrum rgb = LensMask[ix];
-////            std::cout << "P(" << r << ", " << c << ") V(" << rgb[0] << ", " << rgb[1] << ", " << rgb[2] << ")\n";
-//        }
-//    }
+    LensMask = ReadImage(mask_path, &LensDims);
 }
 
 Float CustomCamera::ConvertSamplePoint(const pbrt::Point2f& pt, pbrt::Point2f& ret) const
@@ -309,7 +301,9 @@ CustomCamera *CreateCustomCamera(const ParamSet &params,
     if (halffov > 0.f)
         // hack for structure synth, which exports half of the full fov
         fov = 2.f * halffov;
-    return new CustomCamera(cam2world, screen, shutteropen, shutterclose,
+
+    std::string mask = params.FindOneFilename("mask", "test.png");
+    return new CustomCamera(mask, cam2world, screen, shutteropen, shutterclose,
                             lensradius, focaldistance, fov, film, medium);
 }
 

@@ -1,7 +1,7 @@
 
 LookAt 400 10 30   0 63 -110   0 0 1
 Rotate -5 0 0 1
-Camera "custom" "float fov" [39]
+Camera "custom" "float fov" [39] "string mask" "Levin-et-al.png"
 "float lensradius" [30] "float focaldistance" [300]
 Film "image"  
 "integer xresolution" [700] "integer yresolution" [700]
@@ -11,7 +11,7 @@ Film "image"
 # "integer xresolution" [1500] "integer yresolution" [1500]
 #	"float cropwindow" [ .34 .49  .67 .8 ]
 
-Sampler "halton" "integer pixelsamples" [8]
+Sampler "halton" "integer pixelsamples" [80]
 
 Integrator "path"
 

@@ -50,7 +50,8 @@ namespace pbrt {
 class CustomCamera : public ProjectiveCamera {
   public:
     // CustomCamera Public Methods
-    CustomCamera(const AnimatedTransform &CameraToWorld,
+    CustomCamera(const std::string& mask_path,
+                 const AnimatedTransform &CameraToWorld,
                  const Bounds2f &screenWindow, Float shutterOpen,
                  Float shutterClose, Float lensRadius, Float focalDistance,
                  Float fov, Film *film, const Medium *medium);
