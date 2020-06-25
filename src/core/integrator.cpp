@@ -299,17 +299,6 @@ void SamplerIntegrator::Render(const Scene &scene) {
                         1 / std::sqrt((Float)tileSampler->samplesPerPixel));
                     ++nCameraRays;
 
-//                    Ray r;
-//                    cameraSample.pLens = Point2f(0, 0);
-//                    camera->GenerateRay(cameraSample, &r);
-//                    SurfaceInteraction isect;
-//                    bool foundIntersection = scene.Intersect(r, &isect);
-//                    if (foundIntersection)
-//                    {
-//                        Vector3f vec = isect.p - r.o;
-//                        filmTile->AddSampleDist(cameraSample.pFilm, vec.Length());
-//                    }
-
                     // Evaluate radiance along camera ray
                     Spectrum L(0.f);
                     if (rayWeight > 0) L = Li(ray, scene, *tileSampler, arena);
