@@ -126,6 +126,19 @@ void Film::MergeFilmTile(std::unique_ptr<FilmTile> tile) {
         tilePixel.contribSum.ToXYZ(xyz);
         for (int i = 0; i < 3; ++i) mergePixel.xyz[i] += xyz[i];
         mergePixel.filterWeightSum += tilePixel.filterWeightSum;
+
+        auto n1 = (Float) mergePixel.dist_cnt;
+        auto n2 = (Float) tilePixel.dist_cnt;
+        if (n1 + n2 > 0)
+        {
+            Float inv_sum = 1.0 / (n1 + n2);
+            mergePixel.dist = n1 * inv_sum * mergePixel.dist + n2 * inv_sum * tilePixel.dist;
+            mergePixel.dist_cnt += tilePixel.dist_cnt;
+        }
+        if (tilePixel.dist > 10000)
+        {
+            LOG(INFO) << "INF BOI DETECTED WOOT AT: " << pixel;
+        }
     }
 }
 
@@ -171,6 +184,7 @@ void Film::WriteImage(Float splatScale) {
     LOG(INFO) <<
         "Converting image to RGB and computing final weighted pixel values";
     std::unique_ptr<Float[]> rgb(new Float[3 * croppedPixelBounds.Area()]);
+    std::unique_ptr<Float[]> depth(new Float[croppedPixelBounds.Area()]);
     int offset = 0;
     for (Point2i p : croppedPixelBounds) {
         // Convert pixel XYZ color to RGB
@@ -187,6 +201,14 @@ void Film::WriteImage(Float splatScale) {
             rgb[3 * offset + 2] =
                 std::max((Float)0, rgb[3 * offset + 2] * invWt);
         }
+
+
+        if ((Point2i(32, 0) - p).Length() < 3)
+        {
+            LOG(INFO) << "LOC: " << p << "\tDIST: " << pixel.dist << "\tRGB: "
+            << rgb[3*offset] << ", " << rgb[3*offset+1] << ", " << rgb[3*offset+2];
+        }
+        depth[offset] = pixel.dist;
 
         // Add splat value at pixel
         Float splatRGB[3];
@@ -207,7 +229,8 @@ void Film::WriteImage(Float splatScale) {
     // Write RGB image
     LOG(INFO) << "Writing image " << filename << " with bounds " <<
         croppedPixelBounds;
-    pbrt::WriteImage(filename, &rgb[0], croppedPixelBounds, fullResolution);
+//    pbrt::WriteImage(filename, &rgb[0], croppedPixelBounds, fullResolution);
+    pbrt::WriteImageDepth(filename, &rgb[0], &depth[0], croppedPixelBounds, fullResolution);
 }
 
 Film *CreateFilm(const ParamSet &params, std::unique_ptr<Filter> filter) {

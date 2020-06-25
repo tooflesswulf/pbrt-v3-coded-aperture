@@ -65,7 +65,7 @@ CustomCamera::CustomCamera(const AnimatedTransform &CameraToWorld,
     A = std::abs((pMax.x - pMin.x) * (pMax.y - pMin.y));
 
 //    LensMask = ReadImage("../scenes/test.png", &LensDims);
-    LensMask = ReadImage("../scenes/rand_msk.png", &LensDims);
+    LensMask = ReadImage("../scenes/test.png", &LensDims);
 
     // How to access image elements:
 //    for (int r = 0; r < LensDims.x; ++r) {
@@ -123,9 +123,6 @@ Float CustomCamera::GenerateRay(const CameraSample &sample,
     ray->time = Lerp(sample.time, shutterOpen, shutterClose);
     ray->medium = medium;
     *ray = CameraToWorld(*ray);
-
-    LOG(WARNING) << "tmax of a point (depth?): " << ray->tMax << std::endl;
-
     return f;
 }
 

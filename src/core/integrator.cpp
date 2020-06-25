@@ -273,6 +273,19 @@ void SamplerIntegrator::Render(const Scene &scene) {
                 if (!InsideExclusive(pixel, pixelBounds))
                     continue;
 
+                Ray r;
+                CameraSample LOSSample;
+                LOSSample.pFilm = (Point2f) pixel;
+                LOSSample.pLens = Point2f(0.5, 0.5);
+                camera->GenerateRay(LOSSample, &r);
+                SurfaceInteraction isect;
+                bool foundIntersection = scene.Intersect(r, &isect);
+                if (foundIntersection)
+                {
+                    Vector3f vec = isect.p - r.o;
+                    filmTile->AddSampleDist(LOSSample.pFilm, vec.Length());
+                }
+
                 do {
                     // Initialize _CameraSample_ for current sample
                     CameraSample cameraSample =
@@ -285,6 +298,17 @@ void SamplerIntegrator::Render(const Scene &scene) {
                     ray.ScaleDifferentials(
                         1 / std::sqrt((Float)tileSampler->samplesPerPixel));
                     ++nCameraRays;
+
+//                    Ray r;
+//                    cameraSample.pLens = Point2f(0, 0);
+//                    camera->GenerateRay(cameraSample, &r);
+//                    SurfaceInteraction isect;
+//                    bool foundIntersection = scene.Intersect(r, &isect);
+//                    if (foundIntersection)
+//                    {
+//                        Vector3f vec = isect.p - r.o;
+//                        filmTile->AddSampleDist(cameraSample.pFilm, vec.Length());
+//                    }
 
                     // Evaluate radiance along camera ray
                     Spectrum L(0.f);

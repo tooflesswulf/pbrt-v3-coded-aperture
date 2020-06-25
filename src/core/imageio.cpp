@@ -78,6 +78,47 @@ std::unique_ptr<RGBSpectrum[]> ReadImage(const std::string &name,
     return nullptr;
 }
 
+void WriteImageDepth(const std::string& name, const Float* rgb, const Float* depth,
+                     const Bounds2i &outputBounds, const Point2i &totalResolution)
+{
+    Vector2i resolution = outputBounds.Diagonal();
+    if (!HasExtension(name, ".exr"))
+    {
+        Error("Depth can only be written to exr files for now. Given filename: \"%s\"",
+              name.c_str());
+        return;
+    }
+
+    int xRes = resolution.x;
+    int yRes = resolution.y;
+    int totalXRes = totalResolution.x;
+    int totalYRes = totalResolution.y;
+    int xOffset = outputBounds.pMin.x;
+    int yOffset = outputBounds.pMin.y;
+
+    using namespace Imf;
+    using namespace Imath;
+
+    Rgbad *hrgba = new Rgbad[xRes * yRes];
+    for (int i = 0; i < xRes * yRes; ++i)
+        hrgba[i] = Rgbad(rgb[3 * i], rgb[3 * i + 1], rgb[3 * i + 2], 1.f, depth[i]);
+
+    // OpenEXR uses inclusive pixel bounds.
+    Box2i displayWindow(V2i(0, 0), V2i(totalXRes - 1, totalYRes - 1));
+    Box2i dataWindow(V2i(xOffset, yOffset),
+                     V2i(xOffset + xRes - 1, yOffset + yRes - 1));
+
+    try {
+        RgbaOutputFile file(name.c_str(), displayWindow, dataWindow,
+                            WRITE_RGBD);
+        file.setFrameBuffer(hrgba - xOffset - yOffset * xRes, 1, xRes);
+        file.writePixels(yRes);
+    } catch (const std::exception &exc) {
+        Error("Error writing \"%s\": %s", name.c_str(), exc.what());
+    }
+
+    delete[] hrgba;}
+
 void WriteImage(const std::string &name, const Float *rgb,
                 const Bounds2i &outputBounds, const Point2i &totalResolution) {
     Vector2i resolution = outputBounds.Diagonal();
@@ -141,7 +182,7 @@ RGBSpectrum *ReadImageEXR(const std::string &name, int *width, int *height,
         *width = dw.max.x - dw.min.x + 1;
         *height = dw.max.y - dw.min.y + 1;
 
-        std::vector<Rgba> pixels(*width * *height);
+        std::vector<Rgbad> pixels(*width * *height);
         file.setFrameBuffer(&pixels[0] - dw.min.x - dw.min.y * *width, 1,
                             *width);
         file.readPixels(dw.min.y, dw.max.y);
@@ -167,9 +208,9 @@ static void WriteImageEXR(const std::string &name, const Float *pixels,
     using namespace Imf;
     using namespace Imath;
 
-    Rgba *hrgba = new Rgba[xRes * yRes];
+    Rgbad *hrgba = new Rgbad[xRes * yRes];
     for (int i = 0; i < xRes * yRes; ++i)
-        hrgba[i] = Rgba(pixels[3 * i], pixels[3 * i + 1], pixels[3 * i + 2]);
+        hrgba[i] = Rgbad(pixels[3 * i], pixels[3 * i + 1], pixels[3 * i + 2]);
 
     // OpenEXR uses inclusive pixel bounds.
     Box2i displayWindow(V2i(0, 0), V2i(totalXRes - 1, totalYRes - 1));
