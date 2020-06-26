@@ -163,31 +163,14 @@ class FilmTile {
             }
         }
     }
-    void AddSampleDist(const Point2f &pFilm, Float dist) {
-        ProfilePhase _(Prof::AddFilmSample);
-        // Compute sample's raster bounds
-        Point2f pFilmDiscrete = pFilm - Vector2f(0.5f, 0.5f);
-        Point2i p0 = (Point2i)Ceil(pFilmDiscrete - filterRadius);
-        Point2i p1 =
-                (Point2i)Floor(pFilmDiscrete + filterRadius) + Point2i(1, 1);
-        p0 = Max(p0, pixelBounds.pMin);
-        p1 = Min(p1, pixelBounds.pMax);
+    void AddSampleDist(const Point2i &pFilm, Float dist) {
+        FilmTilePixel& pixel = GetPixel(pFilm);
+        auto n = (float) pixel.dist_cnt;
+        auto npi = 1.0 / (n + 1);
+        auto pdist = pixel.dist;
+        pixel.dist = n*npi * pixel.dist + npi * dist;
+        pixel.dist_cnt++;
 
-        for (int y = p0.y; y < p1.y; ++y) {
-            for (int x = p0.x; x < p1.x; ++x) {
-                // Update pixel values with distance at that point
-                FilmTilePixel &pixel = GetPixel(Point2i(x, y));
-                auto n = (float) pixel.dist_cnt;
-                auto npi = 1.0 / (n + 1);
-                auto pdist = pixel.dist;
-                pixel.dist = n*npi * pixel.dist + npi * dist;
-                if (pixel.dist > 10000)
-                {
-                    LOG(WARNING) << "Its blowing up... Currently " << pixel.dist << "; was " << pdist;
-                }
-                pixel.dist_cnt++;
-            }
-        }
     }
     FilmTilePixel &GetPixel(const Point2i &p) {
         CHECK(InsideExclusive(p, pixelBounds));

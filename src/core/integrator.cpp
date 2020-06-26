@@ -283,7 +283,7 @@ void SamplerIntegrator::Render(const Scene &scene) {
                 if (foundIntersection)
                 {
                     Vector3f vec = isect.p - r.o;
-                    filmTile->AddSampleDist(LOSSample.pFilm, vec.Length());
+                    filmTile->AddSampleDist(pixel, vec.Length());
                 }
 
                 do {
