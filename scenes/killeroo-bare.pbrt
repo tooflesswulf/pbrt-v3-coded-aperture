@@ -1,7 +1,7 @@
 
 LookAt 400 10 30   0 63 -110   0 0 1
 Rotate -5 0 0 1
-Camera "custom" "float fov" [39] "string mask" "Levin-et-al.png"
+Camera "custom" "float fov" [39] "string mask" "Masoudifar.png"
 "float lensradius" [30] "float focaldistance" [300]
 Film "image"  
 "integer xresolution" [700] "integer yresolution" [700]
