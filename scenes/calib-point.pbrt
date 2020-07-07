@@ -1,0 +1,24 @@
+
+LookAt 400 10 30   0 63 -110   0 0 1
+Camera "custom" "float fov" [39] "string mask" "Masoudifar.png"
+"float lensradius" [50] "float focaldistance" [200]
+Film "image"  
+"integer xresolution" [700] "integer yresolution" [700]
+    "string filename" "../Levin-calib.exr"
+
+Sampler "halton" "integer pixelsamples" [20]
+
+# Integrator "path"
+Integrator "bdpt"
+
+WorldBegin
+
+AttributeBegin
+Translate 150 50 -60
+LightSource "point" "rgb I" [ 20000 20000 20000 ]
+#AreaLightSource "area"  "color L" [200000 200000 200000] "integer nsamples" [8]
+Shape "sphere" "float radius" [ 0.01 ]
+AttributeEnd
+
+
+WorldEnd
